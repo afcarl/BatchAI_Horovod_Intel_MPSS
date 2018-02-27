@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/BatchAI/master/schemas/2017-09-01-preview/job.json",
+  "properties": {
+    "nodeCount": 2,
+    "jobPreparation": {
+      "commandLine": "apt-get update -y; apt-get install -y -q -o Dpkg::Options::="--force-confold" --no-install-recommends cpio libdapl2 libmlx4-1 libsm6 libxext6 wget git; cd /tmp; wget 'http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/11595/l_mpi_2017.3.196.tgz'; tar zxvf l_mpi_2017.3.196.tgz; sed -i -e 's/^ACCEPT_EULA=decline/ACCEPT_EULA=accept/g' /tmp/l_mpi_2017.3.196/silent.cfg; sed -i -e 's|^#ACTIVATION_LICENSE_FILE=|ACTIVATION_LICENSE_FILE=/tmp/l_mpi_2017.3.196/USE_SERVER.lic|g' /tmp/l_mpi_2017.3.196/silent.cfg; sed -i -e 's/^ACTIVATION_TYPE=exist_lic/ACTIVATION_TYPE=license_server/g' /tmp/l_mpi_2017.3.196/silent.cfg; cd /tmp/l_mpi_2017.3.196; ./install.sh -s silent.cfg; cd ..; rm -rf l_mpi_2017.3.196*; echo "source /opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/intel64/bin/mpivars.sh" >> ~/.bashrc; source /opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/intel64/bin/mpivars.sh; pip install horovod fix_yahoo_finance keras pandas-datareader;"
+    },
+    "customToolkitSettings": {
+      "commandLine": "source /opt/intel/compilers_and_libraries_2017.4.196/linux/mpi/intel64/bin/mpivars.sh; mpirun -n 2 -ppn 1 -hosts $AZ_BATCH_HOST_LIST -env I_MPI_DEBUG=6 -env I_MPI_FABRICS=tcp python $AZ_BATCHAI_INPUT_SCRIPTS/Horovod_StockPrediction-Keras.py"
+    },
+    "stdOutErrPathPrefix": "$AZ_BATCHAI_MOUNT_ROOT/external",
+    "outputDirectories": [
+      {
+        "id": "MODEL",
+        "pathPrefix": "$AZ_BATCHAI_MOUNT_ROOT/external",
+        "pathSuffix": "Models"
+      }
+    ],
+    "inputDirectories": [{
+        "id": "SCRIPTS",
+        "path": "$AZ_BATCHAI_MOUNT_ROOT/external/horovod_demo"
+      }
+    ],
+    "containerSettings": {
+      "imageSourceRegistry": {
+        "image": "tensorflow/tensorflow:1.4.0-gpu"
+      }
+    }
+  }
+}
